@@ -4,6 +4,8 @@ from dotenv import load_dotenv, find_dotenv
 from openai import OpenAI
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
+from langchain.output_parsers import ResponseSchema
+from langchain.output_parsers import StructuredOutputParser
 
 _ = load_dotenv(find_dotenv()) # read local .env file
 api_key = os.environ['OPENAI_API_KEY']
@@ -34,13 +36,13 @@ prompt_template = """\
 For the following person, extract the following information:\
 name: the name of this person\
 skills: Which skills does he have\
-experience: which experience does he have\
-education: which education did he have\
+experience: in Json (title: title of the job, company: company name, description: description of the job)\
+education: in Json (title: title of the major, uni: uni name, degree: bachelor, master ...)\
 interests: what are this persons interests\
 hobbies: which hobby did he mentioned\
-
 Format the output as a JSON object with following keys:\
 name, skills, experience, education, interests, hobbies.\
+If something is not mentioned, leave it as empty string like "".\
 applicant_info: {applicant_info}\
 """
 prompt_template = ChatPromptTemplate.from_template(prompt_template)
@@ -52,3 +54,77 @@ messages = prompt_template.format_messages(applicant_info=applicant_info)
 chat = ChatOpenAI(temperature=0.0, model=llm_model)
 response = chat(messages)
 print(response.content)
+
+
+
+
+
+
+
+
+name_schema = ResponseSchema(name="name",
+                             description="Wthe name of this person"
+                            )
+skills_schema = ResponseSchema(name="skills",
+                                      description="Which skills does he have"
+                                    )
+experience_schema = ResponseSchema(
+    name="experience",
+    description=(
+        "A list of job objects with structure: "
+        "[{title: title of the job, company: company name, description: description of the role, years: number of years}]"
+    )
+)
+
+education_schema = ResponseSchema(
+    name="education",
+    description=(
+        "A list of education records with structure: "
+        "[{title: major or field of study, uni: university name, degree: bachelor/master/PhD, year: graduation year}]"
+    )
+)
+
+interests_schema = ResponseSchema(name="interests",
+                                    description="what are this persons interests"
+                                  )
+hobbies_schema = ResponseSchema(name="hobbies",
+                                    description="which hobby did he mentioned"
+                                )
+
+
+
+response_schemas = [name_schema, skills_schema, experience_schema, education_schema, interests_schema, hobbies_schema]
+
+output_parser = StructuredOutputParser.from_response_schemas(response_schemas)
+format_instructions = output_parser.get_format_instructions()
+print(format_instructions)
+
+
+
+template2 = """\
+For the following text, extract the following information:
+
+For the following person, extract the following information:\
+name: the name of this person\
+skills: Which skills does he have\
+experience: in Json (title: title of the job, company: company name, description: description of the job)\
+education: in Json (title: title of the major, uni: uni name, degree: bachelor, master ...)\
+interests: what are this persons interests\
+hobbies: which hobby did he mentioned\
+Format the output as a JSON object with following keys:\
+name, skills, experience, education, interests, hobbies.\
+If something is not mentioned, leave it as empty string like "".\
+applicant_info: {applicant_info}\
+
+{format_instructions}
+"""
+
+prompt = ChatPromptTemplate.from_template(template=template2)
+
+messages = prompt.format_messages(applicant_info=applicant_info,
+                                format_instructions=format_instructions)
+
+
+response = chat(messages)
+output_dict = output_parser.parse(response.content)
+print(output_dict.get("education"))

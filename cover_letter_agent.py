@@ -130,7 +130,7 @@ cover_letter_info = prompt_template.format_messages(
     job_title=job_title,
     job_description=job_description,
     style="American English, respectful tone, creative like a story, strong, confident, based on the job description, base on the facts",
-)   
+) 
 
 print(type(cover_letter_info))
 print(type(cover_letter_info[0]))
@@ -140,3 +140,6 @@ print(cover_letter_info[0])
 cover_letter = chat(cover_letter_info)
 
 print(cover_letter.content)
+
+
+
