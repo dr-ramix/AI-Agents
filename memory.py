@@ -33,3 +33,9 @@ memory.load_memory_variables({}) # this will load the memory variables
 memory = ConversationBufferMemory()
 memory.save_context({"input" : "Hi"}, {"output" : "Whats up Ramtin"})
 print(memory.buffer)
+
+
+memory.save_context({"input": "Not much, just hanging"}, 
+                    {"output": "Cool"})
+
+print(memory.load_memory_variables({}))
