@@ -128,3 +128,4 @@ messages = prompt.format_messages(applicant_info=applicant_info,
 response = chat(messages)
 output_dict = output_parser.parse(response.content)
 print(output_dict.get("education"))
+
