@@ -3,8 +3,12 @@ import openai
 from dotenv import load_dotenv, find_dotenv
 from langchain.prompts import ChatPromptTemplate
 from openai import OpenAI
+from langchain_openai import ChatOpenAI
 #Chains
 from langchain.chains import LLMChain
+
+#Sequential chains
+from langchain.chains import SequentialChain
 
 _ = load_dotenv(find_dotenv()) # read local .env file
 api_key = os.environ['OPENAI_API_KEY']
@@ -19,11 +23,11 @@ llm_model = "gpt-3.5-turbo"
 llm = ChatOpenAI(temperature=0.9, model=llm_model)
 
 prompt = ChatPromptTemplate.from_template(
-    "What is the best name to describe \
-    a company that makes {product}?"
+    "Write an interview question for  \
+    a job with title: {job}?"
 )
-
+#Definiton of the chain
 chain = LLMChain(llm=llm, prompt=prompt)
 
-product = "Tablet for kids"
-print(chain.run(product))
+job = "Machine Learning Engineer"
+print(chain.run(job))
